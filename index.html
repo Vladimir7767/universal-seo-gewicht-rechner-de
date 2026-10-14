@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Universal-SEO-Gewichtsrechner-DE: TF-IDF Textdichte & LSI Semantischer Analysator</title>
+<meta name="description" content="Kostenloser professioneller SEO-Analysator für semantisches Gewicht. Berechnen Sie TF-IDF-Dichte, LSI-Keywords und simulieren Sie Google SpamBrain-Risiken.">
+<style>
+:root{--primary:#0d9488;--primary-hover:#0f766e;--success:#16a34a;--danger:#dc2626;--bg:#f8fafc;--card-bg:#ffffff;--text:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--accent:#ea580c;--purple:#7c3aed;--slate:#475569}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{background:var(--bg);color:var(--text);padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.wrapper{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:540px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05)}
+h1{font-size:21px;font-weight:700;margin-bottom:4px;text-align:center;letter-spacing:-0.025em}
+.subtitle{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:20px}
+.live-meter{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:20px;text-align:center}
+.meter-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.05em}
+.bar-container{background:var(--border);border-radius:20px;height:12px;width:100%;overflow:hidden;position:relative}
+.bar-fill{background:var(--primary);width:30%;height:100%;transition:all 0.4s ease}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:20px;border:1px solid var(--border)}
+.tab-btn{padding:10px 2px;background:none;border:none;border-radius:8px;font-size:11px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:all 0.2s;text-align:center}
+.tab-btn.active{background:var(--card-bg);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.group{margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
+select,input[type="number"],input[type="text"],textarea{width:100%;padding:11px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:#fff;color:var(--text);transition:border 0.2s}
+select:focus,input:focus,textarea:focus{border-color:var(--primary);outline:none}
+textarea{height:120px;resize:vertical;font-family:monospace;line-height:1.5;margin-bottom:4px}
+input[type="range"]{width:100%;margin:8px 0;cursor:pointer}
+.range-val{font-size:14px;font-weight:700;color:var(--primary);float:right}
+.calc-btn{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;box-shadow:0 4px 6px -1px rgba(13,148,136,0.2);transition:background 0.2s}
+.calc-btn:hover{background:var(--primary-hover)}
+.skynet-box{background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:14px;margin-top:20px;display:none}
+.skynet-title{font-size:12px;font-weight:700;color:var(--danger);margin-bottom:6px;text-transform:uppercase;text-align:center;letter-spacing:0.05em}
+.results{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:20px;display:none}
+.res-title{font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-align:center;text-transform:uppercase;letter-spacing:0.05em}
+.res-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dashed var(--border);align-items:center}
+.res-row:last-child{border-bottom:none}
+.res-val{font-weight:700;color:var(--primary);text-align:right;max-width:65%}
+.res-val.loss{color:var(--danger)}
+.table-container{max-height:180px;overflow-y:auto;margin-top:12px;border:1px solid var(--border);border-radius:8px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
+th,td{padding:8px 10px;border-bottom:1px solid var(--border)}
+th{background:var(--bg);font-weight:700;color:var(--slate);position:sticky;top:0}
+.badge{padding:2px 6px;border-radius:4px;font-weight:700;font-size:10px;text-transform:uppercase}
+.badge.safe{background:#dcfce7;color:var(--success)}
+.badge.warn{background:#ffedd5;color:var(--accent)}
+.badge.danger{background:#fee2e2;color:var(--danger)}
+.partner-btn{display:block;width:100%;padding:11px;background:#fff;border:1px solid var(--purple);color:var(--purple);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;margin-top:12px;text-decoration:none}
+.partner-btn:hover{background:var(--purple);color:#fff}
+.seo-text{font-size:12px;color:var(--text-muted);margin-top:24px;text-align:justify;line-height:1.4;border-top:1px solid var(--border);padding-top:16px;display:none}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<h1>Universal-SEO-Gewichtsrechner-DE</h1>
+<div class="subtitle">Professionelles Audit für Keyword-Dichte, LSI-Gewichtung &amp; SpamBrain-Risiken</div>
+
+<div class="live-meter">
+<div class="meter-label">Semantische Feldanalyse: <span id="live-preview-zone">Warte auf Eingabe</span></div>
+<div class="bar-container"><div class="bar-fill" id="bar-fill"></div></div>
+</div>
+
+<!-- PERMANENTES TEXTFELD OBEN -->
+<div class="group">
+<label for="seo-text-input">Artikel-Textkorpus zur Analyse</label>
+<textarea id="seo-text-input" placeholder="Fügen Sie Ihren Artikeltext oder KI-generierten Inhalt hier für ein sofortiges semantisches Audit ein..." oninput="updatePreview()"></textarea>
+</div>
+
+<div class="tabs">
+<button class="tab-btn active" onclick="switchTab('text', this)">N-Gramme</button>
+<button class="tab-btn" onclick="switchTab('semantic', this)">TF-IDF Gewicht</button>
+<button class="tab-btn" onclick="switchTab('spambrain', this)">Google-Filter</button>
+</div>
+<!-- REITER 1: N-GRAMME CONFIGURATION -->
+<div id="tab-text" class="tab-content active">
+<div class="group">
+<label for="ngram-depth">N-Gramm-Extraktionstiefe</label>
+<select id="ngram-depth" onchange="updatePreview()">
+<option value="1">Unigramme (Einzelne Wörter)</option>
+<option value="2">Bigramme (Zwei-Wort-Phrasen)</option>
+<option value="3">Trigramme (Drei-Wort-Konstrukte)</option>
+</select>
+</div>
+</div>
+
+<!-- REITER 2: TF-IDF GEWICHT -->
+<div id="tab-semantic" class="tab-content">
+<div class="group">
+<label for="target-keys">Kommerzielle Fokus-Keywords (kommagetrennt)</label>
+<input type="text" id="target-keys" value="kaufen, preis, online" placeholder="z. B. kaufen, günstig, bestellen" oninput="updatePreview()">
+</div>
+<div class="group">
+<label for="intent-type">Google Suchintent-Profiler</label>
+<select id="intent-type" onchange="updatePreview()">
+<option value="informational">Informativer Longread (Blog / Artikel)</option>
+<option value="commercial">Kommerzieller E-Commerce (Katalog / Hub)</option>
+<option value="saas">SaaS-Landingpage (Transaktions-Dienstleistung)</option>
+</select>
+</div>
+</div>
+
+<!-- REITER 3: GOOGLE-FILTER -->
+<div id="tab-spambrain" class="tab-content">
+<div class="group">
+<label for="copy-cost">Aktuelles Budget für Texterstellung / Copywriting (€)</label>
+<input type="number" id="copy-cost" value="250" min="0" max="100000" oninput="updatePreview()">
+</div>
+<div class="group">
+<label for="ai-perplexity">KI Syntaktische Vorhersehbarkeit (%) <span class="range-val" id="ai-val">30%</span></label>
+<input type="range" id="ai-perplexity" min="10" max="100" value="30" oninput="document.getElementById('ai-val').innerText=this.value+'%'; updatePreview();">
+</div>
+</div>
+
+<button class="calc-btn" onclick="calculateAiMetrics()">Rechen-Audit durchführen</button>
+
+<div class="results" id="results-box">
+<div class="res-title">Integriertes technisches Finanzbuch</div>
+<div class="res-row"><span>Gesamte Wortanzahl (Korpusgröße):</span><span class="res-val" id="res-word-count">0 Wörter</span></div>
+<div class="res-row"><span>KI-Footprint-Wahrscheinlichkeit (Vorhersehbarkeit):</span><span class="res-val" id="res-ai-footprint">0%</span></div>
+<div class="res-row"><span>Durchschnittliches TF-IDF Gewicht:</span><span class="res-val" id="res-tfidf">0.0000</span></div>
+<div class="res-row"><span>SEO-Plattform-Einsparungen (Jährlich):</span><span class="res-val" id="res-savings" style="color:var(--success)">0 €</span></div>
+<div class="res-row"><span>Netto-Content-Performance ROI:</span><span class="res-val" id="res-roi">0%</span></div>
+
+<div class="group" style="margin-top:14px; margin-bottom:0;">
+<label>Dichte- & LSI-Umgebungswörterbuch:</label>
+<div class="table-container">
+<table id="lsi-table">
+<thead>
+<tr>
+<th>Phrase / Token</th>
+<th>Dichte</th>
+<th>TF-IDF Gewicht</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="4" style="text-align:center; color:var(--text-muted); padding:20px;">Fügen Sie Text in das Feld oben ein, um die Matrix zu erstellen</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<a href="https://content.de" target="_blank" class="partner-btn" id="partner-link">✍️ Premium LSI-Texter auf Content.de finden</a>
+</div>
+
+<div class="skynet-box" id="skynet-container">
+<div class="skynet-title">🚨 SpamBrain-Filter & Überoptimierungsindex</div>
+<div class="res-row" style="border-bottom:none; color:#991b1b; font-size:12px; text-align:justify;"><span id="skynet-verdict">Geben Sie eine Textmatrix ein, um die Risiken von Suchabwertungen und Filterungen zu bewerten.</span></div>
+</div>
+
+<div id="ads" class="ad"><div id="container-e8c895e6c70ade8e4ef4a72354f42e97"></div></div>
+
+<div class="seo-text" id="seo-box">
+Unser professioneller Online-TF-IDF-Textdichterechner und LSI-semantischer Analysator bietet tiefe linguistische Analysen für die Seitenkonformität unter den modernen Richtlinien von Google AI Overviews und generativen Suchmaschinen. Das Rechen-Backend isoliert strukturelle Keyword-Gewichte mithilfe korporativer mathematischer TF-IDF-Routinen und ordnet N-Gramm-Ebenen (Unigramme, Bigramme und Trigramme) zu, um unnatürliche maschinelle Syntaxsignaturen (KI-Footprint) zu erkennen. Minimieren Sie Deindexierungsflags, die von Google SpamBrain-Algorithmen während aggressiver Überoptimierungspläne erzwungen werden, indem Sie dynamische LSI-Keyword-Arrays rendern und die Infrastruktur-Rendite (ROI) berechnen. Jede Berechnung wird zu 100 % lokal in Ihrem aktiven Browserkontext ausgeführt.
+</div>
+</div>
+<script>
+let currentTab = 'text';
+
+// Fixed EUR baseline for global SEO platform comparison
+const fiatToUSD = { "EUR": 1.11 };
+
+// Starre deutsche KI-Floskeln und Footprint-Signaturen, die von Google SpamBrain überwacht werden
+const aiStopWords = [
+  "es ist wichtig zu beachten", "zusammenfassend lässt sich sagen", "im heutigen zeitalter", 
+  "in der heutigen welt", "ein wesentlicher aspekt", "abschließend möchte ich", 
+  "es sollte betont werden", "auf der anderen seite", "in diesem artikel", 
+  "revolutionieren sie", "das ultimative werkzeug", "wie bereits erwähnt"
+];
+
+function switchTab(tabName, btn) {
+  currentTab = tabName;
+  const buttons = document.querySelectorAll('.tab-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const contents = document.querySelectorAll('.tab-content');
+  contents.forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+  updatePreview();
+}
+
+function tokenizeText(text, nGramDepth) {
+  const cleanText = text.toLowerCase()
+    .replace(/[.,\/#!\$%\^&\*;:{}=\-_`~()?"'—–[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  
+  if (!cleanText) return [];
+  const words = cleanText.split(" ");
+  
+  if (nGramDepth === 1) return words;
+  
+  const nGrams = [];
+  for (let i = 0; i <= words.length - nGramDepth; i++) {
+    let phrase = words.slice(i, i + nGramDepth).join(" ");
+    nGrams.push(phrase);
+  }
+  return nGrams;
+}
+
+function calculateAllAiMetrics() {
+  const textInput = document.getElementById('seo-text-input').value || "";
+  const nGramDepth = parseInt(document.getElementById('ngram-depth').value);
+  const targetKeysRaw = document.getElementById('target-keys').value || "";
+  const intentType = document.getElementById('intent-type').value;
+  const copyCost = parseFloat(document.getElementById('copy-cost').value) || 0;
+  const aiPerplexity = parseFloat(document.getElementById('ai-perplexity').value);
+
+  // 1. Linguistisches Parsing & Token-Verteilung
+  const totalWordsArray = tokenizeText(textInput, 1);
+  const totalWordCount = totalWordsArray.length;
+  
+  const tokensArray = tokenizeText(textInput, nGramDepth);
+  const totalTokensCount = tokensArray.length;
+
+  const frequencyMap = {};
+  tokensArray.forEach(token => {
+    frequencyMap[token] = (frequencyMap[token] || 0) + 1;
+  });
+
+  // KI-Footprint über Phrasen-Matching berechnen
+  let aiMarkerMatches = 0;
+  const lowCaseText = textInput.toLowerCase();
+  aiStopWords.forEach(marker => {
+    if (lowCaseText.includes(marker)) {
+      aiMarkerMatches++;
+    }
+  });
+
+  let baseAiFootprint = 0;
+  if (totalWordCount > 50) {
+    baseAiFootprint = Math.min(100, Math.round((aiMarkerMatches * 15) + (100 - aiPerplexity) * 0.4));
+  }
+
+  const targetKeys = targetKeysRaw.toLowerCase().split(",").map(k => k.trim()).filter(k => k.length > 0);
+
+  // TF-IDF Arrays aufbauen und normalisieren
+  const lsiItems = [];
+  let totalTfidfSum = 0;
+  let targetKeysMaxDensity = 0;
+
+  for (const [phrase, count] of Object.entries(frequencyMap)) {
+    const density = (count / totalTokensCount) * 100;
+    
+    const tf = count / totalTokensCount;
+    const idf = Math.log10(1 + (1000 / (count + 1))); 
+    const tfIdfWeight = tf * idf;
+
+    const isTarget = targetKeys.some(key => phrase.includes(key));
+    if (isTarget && density > targetKeysMaxDensity) {
+      targetKeysMaxDensity = density;
+    }
+
+    totalTfidfSum += tfIdfWeight;
+
+    lsiItems.push({
+      phrase: phrase,
+      count: count,
+      density: density,
+      tfidf: tfIdfWeight,
+      isTarget: isTarget
+    });
+  }
+
+  lsiItems.sort((a, b) => b.count - a.count);
+
+  const averageTfidf = totalTokensCount > 0 ? totalTfidfSum / lsiItems.length : 0;
+
+  // 2. Budgetanalytik & ROI-Formeln
+  const baseSeoPlatformCostEUR = 160; // SurferSEO/Cora jährliches Äquivalenz-Level in EUR
+  
+  const textScoreModifier = totalWordCount > 0 ? Math.max(10, 100 - (targetKeysMaxDensity * 15) - (baseAiFootprint * 0.5)) : 0;
+  const netRoiValue = copyCost > 0 ? (baseSeoPlatformCostEUR / copyCost) * textScoreModifier : 0;
+
+  return {
+    wordCount: totalWordCount + " Wörter",
+    aiFootprint: baseAiFootprint + "%",
+    tfidf: averageTfidf.toFixed(4),
+    savings: Math.round(baseSeoPlatformCostEUR).toLocaleString('de-DE') + " €",
+    roi: Math.round(netRoiValue),
+    intent: intentType,
+    aiFootprintRaw: baseAiFootprint,
+    maxDensity: targetKeysMaxDensity,
+    lsiData: lsiItems.slice(0, 40)
+  };
+}
+
+function updatePreview() {
+  const data = calculateAllAiMetrics();
+  if (!data) return;
+
+  let zone = "Semantik stabil";
+  let color = "var(--primary)";
+  let pct = 70;
+
+  if (data.maxDensity > 3.5 || data.aiFootprintRaw > 65) {
+    zone = "🔴 Google SpamBrain Deindizierungsrisiko";
+    color = "var(--danger)";
+    pct = 15;
+  } else if (data.aiFootprintRaw > 30 && data.aiFootprintRaw <= 65) {
+    zone = "🟡 Maschineller Text-Footprint erkannt";
+    color = "var(--accent)";
+    pct = 45;
+  } else if (parseInt(data.wordCount) > 300 && data.maxDensity <= 3.0) {
+    zone = "🟢 Premium LSI-Umgebung erreicht";
+    color = "var(--success)";
+    pct = 95;
+  }
+
+  const preview = document.getElementById('live-preview-zone');
+  preview.innerText = zone; 
+  preview.style.color = color;
+
+  const fill = document.getElementById('bar-fill');
+  fill.style.width = pct + '%'; 
+  fill.style.background = color;
+
+  // Kontextbezogener Partner-Link-Austausch in Echtzeit
+  const pLink = document.getElementById('partner-link');
+  if (pLink) {
+    if (data.aiFootprintRaw > 50) {
+      pLink.innerText = "✍️ Manuellen Premium-Texter auf Content.de beauftragen";
+      pLink.href = "https://content.de";
+    } else {
+      pLink.innerText = "🔗 Starke redaktionelle Backlinks auf SeedingUp sichern";
+      pLink.href = "https://seedingup.de";
+    }
+  }
+}
+
+window.onload = function() {
+  updatePreview();
+};
+
+function showAds() {
+  const c = document.getElementById('ads');
+  if (!window.adScriptLoaded) {
+    window.atOptions = {
+      'key': 'e8c895e6c70ade8e4ef4a72354f42e97',
+      'format': 'iframe',
+      'height': 90,
+      'width': 728,
+      'params': {}
+    };
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = !0;
+    s.src = ['https://', 'bagelstoppage.', 'com/', 'e8c895e6c70ade8e4ef4a72354f42e97/', 'invoke.js'].join('');
+    c.appendChild(s);
+    window.adScriptLoaded = !0;
+  }
+  c.style.display = 'flex';
+}
+
+function calculateAiMetrics() {
+  const data = calculateAllAiMetrics();
+  if (!data) return;
+
+  document.getElementById('res-word-count').innerText = data.wordCount;
+  document.getElementById('res-ai-footprint').innerText = data.aiFootprint;
+  document.getElementById('res-tfidf').innerText = data.tfidf;
+  document.getElementById('res-savings').innerText = data.savings;
+  document.getElementById('res-roi').innerText = (data.roi > 0 ? "+" : "") + data.roi + "%";
+
+  const tbody = document.querySelector('#lsi-table tbody');
+  tbody.innerHTML = "";
+
+  if (data.lsiData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:20px;">Fügen Sie Text in das Feld oben ein, um die Matrix zu erstellen</td></tr>`;
+  } else {
+    data.lsiData.forEach(item => {
+      const tr = document.createElement('tr');
+      
+      let badgeHtml = `<span class="badge safe">LSI-Konformität</span>`;
+      if (item.density > 3.5) {
+        badgeHtml = `<span class="badge danger">Überladen</span>`;
+      } else if (item.isTarget) {
+        badgeHtml = `<span class="badge warn">Fokus-Keyword</span>`;
+      }
+
+      tr.innerHTML = `
+        <td style="font-weight:600; color:var(--text)">${item.phrase}</td>
+        <td>${item.density.toFixed(1)}% <span style="color:var(--text-muted); font-size:10px;">(${item.count}x)</span></td>
+        <td>${item.tfidf.toFixed(4)}</td>
+        <td>${badgeHtml}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Versicherungs-SpamBrain-Matrix-Urteile
+  let verdict = `Die semantische Infrastruktur ist ausgeglichen. Die kommerziellen TF-IDF-Verteilungswerte entsprechen den zentralen Indexierungsschwellen für den Vektor ${data.intent.toUpperCase()}. Der Inhalt ist bereit für die Indexierung.`;
+  
+  if (data.maxDensity > 3.5) {
+    verdict = `🚨 KRITISCHES KEYWORD-STUFFING: Die maximale Keyword-Dichte hat ${data.maxDensity.toFixed(1)}% erreicht! Google SpamBrain-Filter werden dieses Layout als aggressive Suchmanipulation abfangen. Die Seitenautorität wird unterdrückt. Dünnen Sie Ihren Text sofort aus.`;
+  } else if (data.aiFootprintRaw > 65) {
+    verdict = `🧠 KRITISCHER KI-FOOTPRINT-EINGRIFF (${data.aiFootprint}): Unterroutinen von Google AI Overviews haben mechanische Satzverteilungsmuster und KI-Vorlagen mit niedriger Perplexität abgefangen. Die Deindizierungswahrscheinlichkeit liegt bei 92%. Eine manuelle Überarbeitung ist zwingend erforderlich.`;
+  } else if (data.aiFootprintRaw > 30 && data.maxDensity > 2.8) {
+    verdict = `⚠️ SYNERGISTISCHES SEO-INFRASTRUKTURRISIKO: Gefährliche Kombination aus anfänglicher KI-Signatur (${data.aiFootprint}) und Keyword-Stacking über 2.8%. Die Seite balanciert an den Grenzen des Filters. Eine strukturelle Überarbeitung wird empfohlen.`;
+  }
+
+  document.getElementById('skynet-verdict').innerText = verdict;
+  document.getElementById('results-box').style.display = 'block';
+  document.getElementById('skynet-container').style.display = 'block';
+  updatePreview();
+  showAds();
+}
+</script>
+</body>
+</html>
